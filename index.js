@@ -38,6 +38,12 @@ wsServer.on('request', function(request) {
 			case "saveAccount":
 				SaveAccount(message);
 				break;
+			case "saveQuest":
+				SaveQuest(message);
+				break;
+			case "loadQuest":
+				LoadQuest(message);
+				break;
 		}
 	});
 
@@ -80,3 +86,34 @@ function SaveAccount (message){
 	}
 	});
 }
+
+function SaveQuest (message){
+	console.log ("Attempting to Save Quest");
+	delete message.action;
+	_username = message.username;
+	delete message.username;
+	writeDir = _username+"replays";
+	fs.mkdir(writeDir,function() {});
+	jsonfile.writeFile(writeDir+"/replay100.rep", message, function (err){if (err==null){
+		message["action"] = "questSaved";
+		connection.sendUTF(JSON.stringify(message));
+	}
+	});
+}
+
+function LoadQuest (message){
+
+	console.log ("Attempting to Load Quest");
+	delete message.action;
+	_username = message.username;
+	delete message.username;
+	questNum = message.questNum;
+	readDir = _username+"replays";
+	quest = jsonfile.readFileSync(readDir+"/replay"+questNum+".rep");
+	quest["action"] = "questLoaded";
+	connection.sendUTF(JSON.stringify(quest));
+	
+}
+
+
+
