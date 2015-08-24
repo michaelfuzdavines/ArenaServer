@@ -13,7 +13,7 @@ var server = http.createServer(function(request, response) {
     // process HTTP request. Since we're writing just WebSockets server
     // we don't have to implement anything.
 });
-server.listen(3000, function(err) { if (err!=null){console.log(err)}});
+server.listen(process.env.PORT || 3000, function(err) { if (err!=null){console.log(err)}});
 
 // create the server
 wsServer = new WebSocketServer({
