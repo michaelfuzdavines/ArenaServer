@@ -7,7 +7,7 @@
     "jsonfile": "^2.2.1",
     "fs": "0.0.2",
     "util": "^0.10.3"
-  }
+  },
   "scripts": {
   	"start": "node index.js"
   }
