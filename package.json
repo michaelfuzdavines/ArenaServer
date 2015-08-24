@@ -1,0 +1,11 @@
+{
+  "name": "TheArena",
+  "version": "0.0.1",
+  "description": "Arena Server",
+  "dependencies": {
+    "websocket": "^1.0.21",
+    "jsonfile": "^2.2.1",
+    "fs": "0.0.2",
+    "util": "^0.10.3"
+  }
+}
