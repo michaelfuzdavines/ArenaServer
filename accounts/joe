@@ -1,0 +1,1 @@
+{"coins":150,"username":"joe","activeHero":0,"chars":[{"aMelee":6,"aRanged":2,"aMagic":10,"aGadget":6,"HP":100,"maxHP":100,"weapon":{"damage":5,"type":1},"armor":{"power":0.07737033,"deflect":0.001030311,"type":0},"gadget":{"gadgetType":1,"gadgetPower":3,"type":0},"potion":{"potionType":0,"power":5,"type":0},"name":"Willie 670"}]}

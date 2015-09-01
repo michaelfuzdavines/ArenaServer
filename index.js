@@ -19,11 +19,14 @@ server.listen(process.env.PORT || 3000, function(err) { if (err!=null){console.l
 wsServer = new WebSocketServer({
     httpServer: server
 });
+console.log ("running");
 var connection;
 // WebSocket server
 wsServer.on('request', function(request) {
     connection = request.accept(null, request.origin);
 
+    // This is the most important callback for us, we'll handle
+    // all messages from users here.
     connection.on('message', function(data) {
     
     	console.log(data.utf8Data);
@@ -41,6 +44,12 @@ wsServer.on('request', function(request) {
 				break;
 			case "loadQuest":
 				LoadQuest(message);
+				break;
+			case "saveNextQuestIndex":
+				SaveNextQuestIndex(message);
+				break;
+			case "getNextQuestIndex":
+				GetNextQuestIndex(message);
 				break;
 		}
 	});
@@ -90,9 +99,11 @@ function SaveQuest (message){
 	delete message.action;
 	_username = message.username;
 	delete message.username;
+	_index = message.index;
+	delete message.index;
 	writeDir = _username+"replays";
 	fs.mkdir(writeDir,function() {});
-	jsonfile.writeFile(writeDir+"/replay100.rep", message, function (err){if (err==null){
+	jsonfile.writeFile(writeDir+"/replay"+_index+".rep", message, function (err){if (err==null){
 		message["action"] = "questSaved";
 		connection.sendUTF(JSON.stringify(message));
 	}
@@ -110,7 +121,43 @@ function LoadQuest (message){
 	quest = jsonfile.readFileSync(readDir+"/replay"+questNum+".rep");
 	quest["action"] = "questLoaded";
 	connection.sendUTF(JSON.stringify(quest));
+}
+
+function SaveNextQuestIndex (message){
+	console.log ("Saving Next Quest Index");
+	delete message.action;
+	questNum = message.nextQuestIndex;
+	_username = message.username;
+	delete message.username;
+	writeDir = _username+"replays";
+	fs.mkdir(writeDir,function() {});
+	jsonfile.writeFile(writeDir+"/QuestIndex",message, function (err){if (err==null){
+		message["action"] = "nextQuestIndexSaved";
+		connection.sendUTF(JSON.stringify(message));
+	}});
+
+}
+
+function GetNextQuestIndex () {
+	console.log ("Getting Next Quest Index");
+	delete message.action;
+	_username = message.username;
+	delete message.username;
+	readDir = _username+"replays";
+	filename = readDir+"/QuestIndex";
+	fs.stat(filename, function(err, stat) {
+    if(err == null) {
+        nextQuest = jsonfile.readFileSync(readDir+"/QuestIndex");
+	nextQuest["action"] = "setNextQuestIndex";
+	console.log(nextQuest);
+	connection.sendUTF(JSON.stringify(nextQuest));
+    } else if(err.code == 'ENOENT') {
+        
+    } else {
+        console.log('Some other error: ', err.code);
+    }
 	
+});
 }
 
 
