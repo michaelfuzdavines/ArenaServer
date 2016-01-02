@@ -7,7 +7,16 @@ var util = require('util');
 
 var accountDir = "accounts";
  fs.mkdir(accountDir,function() {});
-
+ if (process.env.REDIS_URL==null){
+var client = require('redis').createClient("redis://h:pb8dn7ao20k9eeg7b9oh48lpcv@ec2-54-243-135-236.compute-1.amazonaws.com:17479");
+console.log("isnull");
+ } else {
+var client = require('redis').createClient(process.env.REDIS_URL);
+}
+client.on('connect', function() {
+    console.log('connected');
+    
+});
 
 var server = http.createServer(function(request, response) {
     // process HTTP request. Since we're writing just WebSockets server
@@ -22,7 +31,11 @@ wsServer = new WebSocketServer({
 console.log ("running");
 var connection;
 // WebSocket server
+wsServer.on('connect', function (){
+	
+})
 wsServer.on('request', function(request) {
+	 console.log("Request Made");
     connection = request.accept(null, request.origin);
 
     // This is the most important callback for us, we'll handle
@@ -32,6 +45,8 @@ wsServer.on('request', function(request) {
     	console.log(data.utf8Data);
     	message = JSON.parse(data.utf8Data);
     	action = message.action;
+    	
+    	
     	switch (action){
 			case "login":
 				Login(message);
@@ -54,6 +69,15 @@ wsServer.on('request', function(request) {
 				case "getSlaveMarket":
 				GetSlaveMarket(message);
 				break;
+			case "addEntry":
+				AddEntry(message);
+				break;
+			case "getAllEntries":
+				GetAllEntries();
+				break;
+			case "clearDB":
+				ClearDB();
+
 		}
 	});
 
@@ -63,24 +87,62 @@ wsServer.on('request', function(request) {
     });
 });
 
+function ClearDB () {
+
+	client.flushdb();
+}
+
+function AddEntry(message){
+	console.log ("Adding Entry");
+	client.set (message.entryName, JSON.stringify(message.entryLineup), function (err, reply){
+		if (err){
+			console.log("REDIS error: "+err);
+			connection.sendUTF("Error: "+err);
+		}
+		else{
+			console.log ("REDIS response: "+reply);
+			connection.sendUTF (reply);
+		}
+	});
+}
+
+function GetAllEntries (){
+	client.scan(0,function(err, reply) {
+		for (i = 0; i<reply[1].length; i++){
+			var key = reply[1][i];
+			client.get(key, function (err, reply){
+				var _data = {};
+				var _lineup = JSON.parse(reply); 
+				_data["entryName"] = key; 
+				_data["lineup"] = _lineup;
+
+				connection.sendUTF(JSON.stringify(_data))
+			});
+			}	
+	});
+}
+
+
+
 function Login (message) {
 	delete message.action;
 	account = accountDir+"/"+message.username;
 	fs.stat(account, function(err, stat) {
-    if(err == null) {
+    if (2 == 3) {
         console.log('File exists');
         loginData = jsonfile.readFileSync(account);
         loginData["action"] = "login";
         connection.sendUTF(JSON.stringify(loginData));
-    } else if(err.code == 'ENOENT') {
+    } else {
         jsonfile.writeFile(account, message, function (err){if (err==null){
         	message["action"] = "newAccount";
         	connection.sendUTF(JSON.stringify(message));
+        	client.scan(0,function(err, reply) {
+    			connection.sendUTF(reply[1]);
+			});
         }});
 
-    } else {
-        console.log('Some other error: ', err.code);
-    }
+    } 
 
 
 });
