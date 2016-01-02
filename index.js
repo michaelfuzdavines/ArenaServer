@@ -51,6 +51,9 @@ wsServer.on('request', function(request) {
 			case "getNextQuestIndex":
 				GetNextQuestIndex(message);
 				break;
+				case "getSlaveMarket":
+				GetSlaveMarket(message);
+				break;
 		}
 	});
 
@@ -159,6 +162,23 @@ function GetNextQuestIndex () {
 	
 });
 }
+
+function GetSlaveMarket (message){
+	console.log ("Getting Slave Market");
+	filename = "SlaveMarket";
+	fs.stat(filename, function(err, stat) {
+    if(err == null) {
+        slaveMarket = jsonfile.readFileSync(filename);
+	slaveMarket["action"] = "receiveSlaveMarket";
+	connection.sendUTF(JSON.stringify(nextQuest));
+    } else if(err.code == 'ENOENT') {
+        
+    } else {
+        console.log('Some other error: ', err.code);
+    }
+});
+}
+
 
 
 
