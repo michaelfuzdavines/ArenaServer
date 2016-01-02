@@ -7,7 +7,7 @@ var util = require('util');
 
 var accountDir = "accounts";
  fs.mkdir(accountDir,function() {});
- if (process.env.REDIS_URL==null){
+ if (process.env.REDIS_URL==null){          
 var client = require('redis').createClient("redis://h:pb8dn7ao20k9eeg7b9oh48lpcv@ec2-54-243-135-236.compute-1.amazonaws.com:17479");
 console.log("isnull");
  } else {
@@ -41,7 +41,7 @@ wsServer.on('request', function(request) {
     // This is the most important callback for us, we'll handle
     // all messages from users here.
     connection.on('message', function(data) {
-    
+    	connection.sendUTF("Request Received");
     	console.log(data.utf8Data);
     	message = JSON.parse(data.utf8Data);
     	action = message.action;
