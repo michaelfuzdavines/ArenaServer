@@ -42,6 +42,7 @@ wsServer.on('request', function(request) {
     // all messages from users here.
     connection.on('message', function(data) {
     	connection.sendUTF("Request Received");
+    	console.log ("DATA BELOW");
     	console.log(data.utf8Data);
     	message = JSON.parse(data.utf8Data);
     	action = message.action;
